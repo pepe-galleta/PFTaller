@@ -1,11 +1,16 @@
 import Definitions
 
-usuariosPrueba = [(001, "Jeferson"),(002, "Juan"),(003, "Karen"),(004, "Camila"),(005, "Jhonatan")]
-publicacionesPrueba = [((001,"Jeferson"), "Publicacion de prueba de Jeferson", [(004, "Camila"),(006, "Jhonatan")]),((003, "Karen"), "Me llamo Karen", [(002, "Juan")]),((006, "Jhonatan"), "Otra prueba Jhonatan",[])] 
-relacionesPrueba = [((001,"Jeferson"),(003, "Karen")),((002, "Juan"),(003, "Karen")),((004, "Camila"),(006, "Jhonatan")),((001, "Jeferson"),(006, "Jhonatan"))]
-redSocialPrueba = ([(001, "Jeferson"),(002, "Juan"),(003, "Karen"),(004, "Camila"),(006, "Jhonatan")], [((001,"Jeferson"),(003, "Karen")),((002, "Juan"),(003, "Karen")),((004, "Camila"),(006, "Jhonatan")),((001, "Jeferson"),(006, "Jhonatan"))], [((001,"Jeferson"), "Publicacion de prueba de Jeferson", [(004, "Camila"),(006, "Jhonatan")]),((003, "Karen"), "Me llamo Karen", [(002, "Juan")]),((006, "Jhonatan"), "Otra prueba Jhonatan",[])] )
+usuariosPrueba = [(001, "Jeferson"),(002, "Juan"),(003, "Karen"),(004, "Camila"),(006, "Jhonatan")]
+publicacionesPrueba = [((001,"Jeferson"), "Publicacion de prueba de Jeferson",[]), ((004, "Camila"), "SOy Camila", [(006, "Jhonatan")]), ((003, "Karen"), "Me llamo Karen", [(002, "Juan")]), ((006, "Jhonatan"), "Otra prueba Jhonatan",[])] 
+relacionesPrueba = [ ((002, "Juan"),(003, "Karen")) , ((004, "Camila"),(006, "Jhonatan")) , ((001, "Jeferson"),(004, "Camila")) ]
+
+redSocialPrueba :: Set Usuario -> Set Relacion -> Set Publicacion -> RedSocial
+redSocialPrueba usuariosPrueba relacionesPrueba publicacionesPrueba = (usuariosPrueba, relacionesPrueba, publicacionesPrueba)
+
+--redSocialPrueba = ( [(001, "Jeferson"),(002, "Juan"),(003, "Karen"),(004, "Camila"),(006, "Jhonatan")],  [((001,"Jeferson"),(003, "Karen")),((002, "Juan"),(003, "Karen")),((004, "Camila"),(006, "Jhonatan")),((001, "Jeferson"),(006, "Jhonatan"))],  [((001,"Jeferson"), "Publicacion de prueba de Jeferson", [(004, "Camila"),(006, "Jhonatan")]),((003, "Karen"), "Me llamo Karen", [(002, "Juan")]),((006, "Jhonatan"), "Otra prueba Jhonatan",[])] )
 
 -- FUnciones auxiliares más generales
+
 usuariosDeLaRed :: RedSocial -> Set Usuario
 usuariosDeLaRed (users, _, _) = users
 
@@ -17,12 +22,11 @@ publicacionesDeLaRed (_, _, publicaciones) = publicaciones
 
 -- Dada una red social retorna un conjunto con los nombres de todos los usuarios.
 nombresDeUsuarios :: RedSocial -> Set String
-nombresDeUsuarios red = obtenerNombresDeUsuarios (usuariosDeLaRed red)
+nombresDeUsuarios red = obtenerNombresDeUsuarios (usuarios red)
 
 obtenerNombresDeUsuarios :: Set Usuario -> Set String
 obtenerNombresDeUsuarios [] = []
 obtenerNombresDeUsuarios ( user:users ) = ( snd user ) : obtenerNombresDeUsuarios users
-
 
 -- Dada una red social y un usuario retorna el conjunto de amigos del mismo
 amigosDe :: RedSocial -> Usuario -> Set Usuario
@@ -41,8 +45,15 @@ cantidadDeAmigos :: RedSocial -> Usuario -> Int
 cantidadDeAmigos red usuario = length (amigosDe red usuario)
 
 -- Dada una red social retorna el usuario con mas amigos. De existir más de uno devuelve cualquiera de ellos.
-usuarioConMasAmigos :: RedSocial -> Usuario
-usuarioConMasAmigos = undefined
+usuarioConMasAmigos :: RedSocial -> (Usuario, Int)
+usuarioConMasAmigos red = usuarioConMasAmigosAux red (usuariosDeLaRed red) (relacionesDeLaRed red) (000, "Sin Amigos")
+
+usuarioConMasAmigosAux :: RedSocial -> Set Usuario -> Set Relacion -> Usuario -> (Usuario, Int)
+usuarioConMasAmigosAux red usuarios relaciones usuario | usuarios == [] = (usuario, valorActual)
+                                                       | valorActual > valorLista = usuarioConMasAmigosAux red (tail usuarios) relaciones usuario
+                                                       | otherwise = usuarioConMasAmigosAux red (tail usuarios) relaciones (head usuarios)
+                                                         where valorActual = cantidadDeAmigos red usuario
+                                                               valorLista = cantidadDeAmigos red (head usuarios)
 
 -- Dada una red social retorna True si algún usuario tiene más de un millón de amigos
 estaRobertoCarlos :: RedSocial -> Bool
